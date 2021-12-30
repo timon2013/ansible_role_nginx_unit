@@ -1,0 +1,35 @@
+{
+    "listeners": {
+        "127.0.0.1:8090": {
+            "application": "{{ ansible_role_nginx_unit_script_php }}"
+        },
+        "127.0.0.1:8091": {
+            "application": "{{ ansible_role_nginx_unit_direct_php }}"
+        }
+    },
+
+    "applications": {
+        "script_index_php": {
+            "type": "php",
+            "processes": {
+                "max": 20,
+                "spare": 5
+            },
+            "user": "wordpress",
+            "group": "wordpress",
+            "root": "{{ ansible_role_nginx_unit_application_path }}",
+            "script": "index.php"
+        },
+        "direct_php": {
+            "type": "php",
+            "processes": {
+                "max": 5,
+                "spare": 0
+            },
+            "user": "wordpress",
+            "group": "wordpress",
+            "root": "{{ ansible_role_nginx_unit_application_path }}",
+            "index": "index.php"
+        }
+    }
+}

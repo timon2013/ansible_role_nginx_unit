@@ -1,0 +1,53 @@
+---
+# tasks file for ansible_role_nginx_unit
+- name: Add repository nginx unit
+  copy:
+    content: |
+      [unit]
+      name=unit repo
+      baseurl=https://packages.nginx.org/unit/centos/$releasever/$basearch/
+      gpgcheck=0
+      enabled=1
+    dest: /etc/yum.repos.d/unit.repo
+
+- name: Install
+  yum: 
+    name: "{{ item }}"
+    state: present
+    disablerepo: remi*
+  loop:
+    - unit
+    - unit-devel
+    #- unit-php
+
+- name: Install
+  yum: 
+    name: "{{ item }}"
+    state: present
+    #disablerepo: remi*
+  loop:
+   #- unit
+    #- unit-devel
+    - unit-php
+
+- name: Ensure directory exists
+  file:
+    path: "{{ ansible_role_nginx_applicatio_path }}"
+    state: directory
+    #owner: "{{ ansible_role_wordpress_user }}"
+    #roup: "{{ ansible_role_wordpress_group }}"
+    mode: 0755
+  
+- name: Copy config for application
+  template:
+    src: wordpress.config.j2
+    dest: "{{ ansible_role_nginx_applicatio_path }}/wordpress.config"
+
+- name: "Ensure Unit is started and enabled at boot."
+  systemd:
+    name: unit
+    state: started
+    enabled: yes
+
+- name: Loading configuration
+  shell: curl -X PUT --data-binary @{{ ansible_role_nginx_applicatio_path }}/wordpress.config --unix-socket /var/run/unit/control.sock http://localhost/config
